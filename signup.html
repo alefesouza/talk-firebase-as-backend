@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cadastro</title>
+  </head>
+
+  <body>
+    <div id="login">
+      <div>
+        <label>E-mail:</label>
+
+        <input type="email" id="email" />
+      </div>
+      <div>
+        <label>Senha:</label>
+
+        <input type="password" id="password" />
+      </div>
+      <div>
+        <label>Confirmar senha:</label>
+
+        <input type="password" id="confirm-password" />
+      </div>
+
+      <button id="submit">Entrar</button>
+    </div>
+
+    <div id="hello" style="display: none;"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "",
+        authDomain: "",
+        databaseURL: "",
+        projectId: "",
+        storageBucket: "",
+        messagingSenderId: ""
+      };
+      firebase.initializeApp(config);
+    </script>
+
+    <script>
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirm-password');
+      const submit = document.getElementById('submit');
+      
+      firebase.auth().onAuthStateChanged((user) => {
+          if (user != null) {
+            window.location.href = 'index.html';
+          }
+      });
+    
+      submit.addEventListener('click', () => {
+        if (password.value != confirmPassword.value) {
+            alert('Senhas não coincidem.');
+            return;
+        }
+
+        firebase.auth().createUserWithEmailAndPassword(email.value, password.value)
+          .then(() => {
+              alert('Usuário criado com sucesso.');
+          })
+          .catch((e) => {
+              if (e.code === 'auth/email-already-in-use') {
+                  alert('E-mail já cadastrado.');
+              }
+          });
+      });
+    </script>
+  </body>
+</html>

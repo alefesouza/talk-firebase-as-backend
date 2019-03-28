@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Início</title>
+  </head>
+
+  <body>
+
+    <div id="hello">
+      Olá, <span id="name"></span>
+      <button id="logout">Sair</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "",
+        authDomain: "",
+        databaseURL: "",
+        projectId: "",
+        storageBucket: "",
+        messagingSenderId: ""
+      };
+      firebase.initializeApp(config);
+    </script>
+
+    <script>
+      const name = document.getElementById('name');
+      
+      logout.addEventListener('click', () => {
+        firebase.auth().signOut();
+      });
+      
+      firebase.auth().onAuthStateChanged((user) => {
+          if (user != null) {
+            name.textContent = user.email;
+            return;
+          }
+        
+          window.location.href = 'login.html';
+      });
+    </script>
+  </body>
+</html>
