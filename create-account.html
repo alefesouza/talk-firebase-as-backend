@@ -13,6 +13,11 @@
         <form class="mt-5" id="account-form">
 
             <div class="form-group">
+                <label for="name" class="form-label">Nome</label>
+                <input type="text" id="name" class="form-control">
+            </div>
+
+            <div class="form-group">
                 <label for="email" class="form-label">E-mail</label>
                 <input type="text" id="email" class="form-control">
             </div>
@@ -47,25 +52,15 @@
             const email = document.querySelector('#email').value;
             const password = document.querySelector('#password').value;
 
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(user => {
-                    console.log(user);
-                    window.location.href = 'index.html';
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(response => {
+                    firebase.firestore().collection('users').doc(response.user.uid).set({
+                        email: email,
+                        name: document.querySelector('#name').value,
+                    })
                 })
                 .catch(error => {
                     console.log(error);
-
-                    switch (error.code) {
-                        case 'auth/invalid-email':
-                            alert('E-amil inválido');
-                            break;
-                        case 'auth/user-not-found':
-                            alert('Usuário não encontrado')
-                            break;
-                        case 'auth/wrong-password':
-                            alert('Senha inválida');
-                            break;
-                    }
                 });
         }
         

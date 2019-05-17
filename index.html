@@ -1,46 +1,101 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Início</title>
-  </head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Criar conta - BackEndBr</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
 
-  <body>
+    <div class="container">
 
-    <div id="hello">
-      Olá, <span id="name"></span>
-      <button id="logout">Sair</button>
+        <div>Olá, <span id="email"></span></div>
+
+        <button id="add-todo" class="btn btn-primary">Adicionar To-Do</button>
+
+        <button class="btn btn-primary" id="logout">Sair</button>
+
+        <ul id="todos"></ul>
+
     </div>
+    
 
-    <script src="https://www.gstatic.com/firebasejs/5.9.1/firebase.js"></script>
-    <script>
-      // Initialize Firebase
-      var config = {
-        apiKey: "",
-        authDomain: "",
-        databaseURL: "",
-        projectId: "",
-        storageBucket: "",
-        messagingSenderId: ""
-      };
-      firebase.initializeApp(config);
-    </script>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#config-web-app -->
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-firestore.js"></script>
+
+    <script src="firebaseConfig.js"></script>
 
     <script>
-      const name = document.getElementById('name');
-      
-      logout.addEventListener('click', () => {
-        firebase.auth().signOut();
-      });
-      
-      firebase.auth().onAuthStateChanged((user) => {
-          if (user != null) {
-            name.textContent = user.email;
-            return;
-          }
+
+        let userUid = '';
         
-          window.location.href = 'login.html';
-      });
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            userUid = user.uid;
+
+            document.querySelector('#email').textContent = user.email;
+
+            firebase.firestore().collection('users').doc(userUid).collection('todos')
+                .onSnapshot(snapshot => {
+                    const list = document.querySelector('#todos');
+
+                    list.innerHTML = '';
+
+                    snapshot.forEach(todo => {
+
+                        const data = todo.data();
+
+                        const item = document.createElement('li');
+                        item.textContent = data.text;
+
+                        const remove = document.createElement('button');
+                        remove.textContent = 'X';
+                        remove.onclick = () => {
+                            firebase.firestore().collection('users').doc(userUid).collection('todos').doc(todo.id).delete();
+                        }
+
+                        const edit = document.createElement('button');
+                        edit.textContent = 'Editar';
+                        edit.onclick = () => {
+                            const text = prompt('Adicione a descrição', data.text);
+
+                            firebase.firestore().collection('users').doc(userUid).collection('todos').doc(todo.id).update({
+                                text: text,
+                            });
+                        }
+
+                        item.appendChild(edit);
+                        item.appendChild(remove);
+
+                        list.appendChild(item);
+
+                    })
+                })
+        });
+
+        document.querySelector('#logout').onclick = () => {
+            firebase.auth().signOut();
+        }
+
+        document.querySelector('#add-todo').onclick = () => {
+            const text = prompt('Adicione a descrição');
+
+            firebase.firestore().collection('users').doc(userUid).collection('todos').add({
+                text: text,
+            });
+        }
+        
     </script>
-  </body>
+
+</body>
 </html>
